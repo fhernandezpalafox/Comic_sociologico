@@ -1,0 +1,563 @@
+/* Reset y configuración base */
+* {
+  box-sizing: border-box;
+}
+
+/* Fondo estilo cómic */
+.comic-reader {
+  min-height: 100vh;
+  background: 
+    radial-gradient(ellipse at top left, #ff6b6b 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, #4ecdc4 0%, transparent 50%),
+    radial-gradient(ellipse at center, #ffe66d 0%, transparent 50%),
+    linear-gradient(135deg, #f7f7f7 0%, #e8e8e8 100%);
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Puntos de ben day (patrón de puntos de cómic) */
+.comic-reader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Contenedor del libro */
+.comic-book-container {
+  max-width: 1400px;
+  width: 100%;
+  perspective: 2000px;
+  position: relative;
+}
+
+/* Libro abierto */
+.comic-book {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+}
+
+/* Páginas del libro */
+.page {
+  flex: 1;
+  background: #ffffff;
+  border: 3px solid #2c2c2c;
+  position: relative;
+  overflow: hidden;
+  min-height: 70vh;
+  max-height: 80vh;
+  transform-style: preserve-3d;
+}
+
+/* Página izquierda */
+.left-page {
+  border-radius: 20px 4px 4px 20px;
+  transform: rotateY(5deg);
+  background: 
+    linear-gradient(to right, rgba(0,0,0,0.05) 0%, transparent 10%),
+    #ffffff;
+  box-shadow: 
+    inset 10px 0 30px rgba(0,0,0,0.1),
+    -5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* Página única centrada */
+.single-page {
+  border-radius: 20px;
+  transform: none;
+  background: #ffffff;
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.2),
+    0 0 20px rgba(0,0,0,0.1);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  max-width: 800px;
+  width: 100%;
+}
+
+/* Efecto de transición de página */
+.single-page.turning {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+/* Contenido de la página */
+.page-content {
+  padding: 20px;
+  height: 100%;
+  position: relative;
+}
+
+/* Número de página */
+.page-number {
+  position: absolute;
+  bottom: 15px;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  background: #ffe66d;
+  padding: 5px 12px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #333;
+}
+
+.left-page .page-number {
+  left: 15px;
+}
+
+.single-page .page-number {
+  right: 15px;
+}
+
+/* Contenedor del canvas */
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Imagen del cómic */
+.comic-image {
+  max-width: 100%;
+  max-height: calc(100% - 40px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border: 3px solid #2c2c2c;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 
+    4px 4px 0 #333,
+    8px 8px 0 rgba(51,51,51,0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Transición suave de páginas */
+.page.turning .comic-image {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Burbujas de diálogo */
+.speech-bubble {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid #2c2c2c;
+  border-radius: 15px;
+  padding: 8px 12px;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c2c2c;
+  max-width: 180px;
+  box-shadow: 
+    2px 2px 0 #2c2c2c,
+    4px 4px 0 rgba(44,44,44,0.3);
+  opacity: 0;
+  transform: scale(0) rotate(-5deg);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 10;
+}
+
+.speech-bubble.active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  animation: comic-pop 0.6s ease-out;
+}
+
+/* Cola de la burbuja */
+.bubble-tail {
+  position: absolute;
+  bottom: -15px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 20px solid #2c2c2c;
+  z-index: -1;
+}
+
+.bubble-tail::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: -12px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 17px solid #ffffff;
+}
+
+/* Animación estilo cómic */
+@keyframes comic-pop {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Controles del cómic */
+.comic-controls {
+  position: absolute;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #ffffff;
+  border: 4px solid #2c2c2c;
+  border-radius: 50px;
+  padding: 15px 30px;
+  box-shadow: 
+    6px 6px 0 #2c2c2c,
+    12px 12px 0 rgba(44,44,44,0.3);
+}
+
+/* Botones de control */
+.control-btn {
+  background: #ffe66d;
+  border: 3px solid #2c2c2c;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c2c2c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 0 #2c2c2c;
+}
+
+.control-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #2c2c2c;
+  background: #ffdf3d;
+}
+
+.control-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #2c2c2c;
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #e0e0e0;
+}
+
+/* Botones de navegación */
+.nav-btn {
+  background: #4ecdc4;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #3eb8af;
+}
+
+/* Flechas de navegación */
+.arrow-left,
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.arrow-left {
+  border-width: 10px 15px 10px 0;
+  border-color: transparent #2c2c2c transparent transparent;
+  margin-right: 3px;
+}
+
+.arrow-right {
+  border-width: 10px 0 10px 15px;
+  border-color: transparent transparent transparent #2c2c2c;
+  margin-left: 3px;
+}
+
+/* Botón de play/pause */
+.play-btn {
+  background: #ff6b6b;
+  width: 60px;
+  height: 60px;
+  font-size: 28px;
+}
+
+.play-btn.playing {
+  background: #4ecdc4;
+  animation: pulse 2s infinite;
+}
+
+.play-btn:hover:not(:disabled) {
+  background: #ff5252;
+}
+
+.play-btn.playing:hover {
+  background: #3eb8af;
+}
+
+/* Botón de reiniciar */
+.restart-btn {
+  background: #9b59b6;
+}
+
+.restart-btn:hover:not(:disabled) {
+  background: #8e44ad;
+}
+
+/* Indicador de página */
+.page-indicator {
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c2c2c;
+  background: #ffffff;
+  padding: 8px 20px;
+  border-radius: 30px;
+  border: 3px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  white-space: nowrap;
+}
+
+/* Controles centrales */
+.center-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Indicador de narración */
+.narration-indicator {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: #ffffff;
+  border: 3px solid #2c2c2c;
+  border-radius: 30px;
+  padding: 10px 20px;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 16px;
+  font-weight: bold;
+  color: #2c2c2c;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  animation: slide-in 0.4s ease-out;
+}
+
+/* Animación de pulso */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Punto pulsante */
+.pulse {
+  width: 12px;
+  height: 12px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
+}
+
+/* Animación de entrada */
+@keyframes slide-in {
+  from {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Indicador de bienvenida */
+.welcome-indicator {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background: #4ecdc4;
+  border: 3px solid #2c2c2c;
+  border-radius: 30px;
+  padding: 15px 25px;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c2c2c;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  animation: slide-in 0.6s ease-out;
+}
+
+/* Pulso de bienvenida */
+.welcome-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Overlay de carga */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 20px;
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+/* Spinner de carga */
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f0f0f0;
+  border-top: 5px solid #ff6b6b;
+  border-right: 5px solid #4ecdc4;
+  border-bottom: 5px solid #ffe66d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mensaje de error */
+.error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ff6b6b;
+  color: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  border: 3px solid #2c2c2c;
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 4px 4px 0 #2c2c2c;
+}
+
+/* Vista previa de página */
+.page-preview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Comic Sans MS', 'Bangers', cursive;
+  font-size: 24px;
+  color: #ccc;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .comic-book {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .left-page {
+    display: none;
+  }
+  
+  .right-page {
+    border-radius: 20px;
+    transform: none;
+    min-height: 60vh;
+  }
+  
+  .comic-controls {
+    bottom: -60px;
+    padding: 10px 20px;
+    gap: 10px;
+  }
+  
+  .control-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .play-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  .page-indicator {
+    font-size: 14px;
+    padding: 6px 15px;
+  }
+  
+  .speech-bubble {
+    font-size: 14px;
+    max-width: 180px;
+    padding: 10px 15px;
+  }
+}
+
+/* Importar fuente de cómic */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
